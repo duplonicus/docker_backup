@@ -1,0 +1,57 @@
+# My Docker containers
+version: '3.8'
+
+services:
+
+  # docker run -d -p 3000:8080 --gpus=all -v ollama:/root/.ollama -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:ollama
+  
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:ollama
+    container_name: open-webui
+    ports:
+      - "3000:8080"  # Expose OpenWebUI on default port
+    volumes:
+      - ollama:/root/.ollama  # Persistent storage for OpenWebUI
+      - open-webui:/app/backend/data
+    runtime: nvidia  # Use GPU for OpenWebUI
+    deploy:
+      restart_policy:
+        condition: always
+      resources:
+        reservations:
+          devices:
+            - capabilities: 
+                - gpu  # Define GPU access requirement
+
+  #  docker run -d --name SearXNG -p 80:8080 -v searxng-data:/data --restart unless-stopped searxng/searxng
+    
+  searxng:
+    image: searxng/searxng
+    container_name: searxng
+    ports:
+      - "80:8080"  # Map port 80 to internal SearXNG's 8080
+    volumes:
+      - searxng-data:/etc/searxng  # Use existing volume
+    environment:
+      - BASE_URL=http://localhost
+      - INSTANCE_NAME=searxng   # Customize instance name
+    deploy:
+      restart_policy:
+        condition: always           # Ensure SearXNG restarts automatically
+
+  # docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 86400       # Check for updates daily
+    deploy:
+      restart_policy:
+        condition: always           # Ensure Watchtower restarts automatically
+
+volumes:
+  ollama:
+  open-webui:
+  searxng-data:
