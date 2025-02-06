@@ -70,4 +70,4 @@ volumes:
   ollama:
   open-webui:
   searxng-data:
-  dcs-briefing-room-data:
+  #dcs-briefing-room-data:
